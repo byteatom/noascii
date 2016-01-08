@@ -12,8 +12,7 @@ void process(path &file) {
 	{
 		if (is_directory(file)) {
 			for (directory_entry& entry : directory_iterator(file)) {
-				path subFile = entry.path();
-				process(subFile);
+				process(entry.path());
 			}
 		}
 		else if (is_regular_file(file)) {
