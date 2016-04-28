@@ -1,27 +1,27 @@
-#include "stdafx.h"
-#include "noascii.h"
+#include <SDKDDKVer.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-using namespace boost::filesystem;
-using namespace std;
+namespace bfs = boost::filesystem;
 
-void process(path &file) {
+void process(const bfs::path &file) {
 	try
 	{
-		if (is_directory(file)) {
-			for (directory_entry& entry : directory_iterator(file)) {
+		if (bfs::is_directory(file)) {
+			for (bfs::directory_entry& entry : bfs::directory_iterator(file)) {
 				process(entry.path());
 			}
 		}
-		else if (is_regular_file(file)) {
-			boost::filesystem::fstream fs(file, ios::in | ios::binary);	
-			uintmax_t  size  = file_size(file);			
-			unsigned char *buf = new unsigned char[size];			
+		else if (bfs::is_regular_file(file)) {
+			bfs::fstream fs(file, std::ios::in | std::ios::binary);
+			uintmax_t  size  = file_size(file);
+			unsigned char *buf = new unsigned char[size];
 			fs.read((char*)buf, size);
 			fs.close();
-			fs.open(file, ios::out | ios::binary | ios::trunc);			
+			fs.open(file, std::ios::out | std::ios::binary | std::ios::trunc);
 			for (uintmax_t  i = 0; i < size; ++i) {
 				if (buf[i] < 127)
 					fs.put((char)buf[i]);
@@ -29,7 +29,7 @@ void process(path &file) {
 			delete buf;
 		}
 	}
-	catch (const filesystem_error& ex)
+	catch (const bfs::filesystem_error& ex)
 	{
 		MessageBoxA(NULL, ex.what(), "Exception", MB_OK);
 	}
@@ -48,7 +48,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return 0;
 	}
 
-	path path(lpCmdLine);
+	bfs::path path(lpCmdLine);
 
 	if (!exists(path)) {
 		std::wstring prompt = std::wstring(L"File ") + lpCmdLine + L" not exist!";
